@@ -98,7 +98,7 @@ HOW YOUTUBE VIDEO ACTUALLY WORKS — READ THIS FIRST
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 License: MIT — free to use, modify, and distribute.
-Project: https://github.com/YOUR_GITHUB_USERNAME/ytdl
+Project: https://github.com/Stonesetter/Youtube-Downloader
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
@@ -112,7 +112,7 @@ __version__ = "1.0.0"
 # When you create a GitHub repo, set this to "YourUsername/ytdl".
 # The update checker pings the GitHub Releases API to compare versions.
 # Leave as-is if you haven't published to GitHub yet.
-UPDATE_REPO = "YOUR_GITHUB_USERNAME/ytdl"
+UPDATE_REPO = "Stonesetter/Youtube-Downloader"
 
 import argparse
 import glob
@@ -323,8 +323,8 @@ def check_for_updates(repo: str, current_version: str) -> None:
     Check GitHub releases for a newer version. Safe to call in a background
     thread — all errors are silently caught so they never interrupt a download.
     """
-    if not repo or repo == "YOUR_GITHUB_USERNAME/ytdl":
-        return  # Not published yet
+    if not repo:
+        return  # No repo configured
 
     try:
         url = f"https://api.github.com/repos/{repo}/releases/latest"

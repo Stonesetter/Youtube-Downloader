@@ -4,7 +4,7 @@
 #
 # What it's for:
 #   - Lets users install ytdl as a proper Python package with:
-#       pip install git+https://github.com/YOUR_GITHUB_USERNAME/ytdl.git
+#       pip install git+https://github.com/Stonesetter/Youtube-Downloader.git
 #   - Defines the 'ytdl' command so it runs from anywhere in the terminal
 #   - Declares Python version requirements and dependencies
 #
@@ -27,7 +27,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
 authors = [
-    { name = "YOUR_GITHUB_USERNAME" },
+    { name = "Stonesetter" },
 ]
 keywords = ["youtube", "downloader", "video", "yt-dlp", "educational"]
 classifiers = [
@@ -59,11 +59,11 @@ dependencies = [
 ytdl = "ytdl:main"
 
 [project.urls]
-Homepage = "https://github.com/YOUR_GITHUB_USERNAME/ytdl"
-Repository = "https://github.com/YOUR_GITHUB_USERNAME/ytdl"
-"Bug Tracker" = "https://github.com/YOUR_GITHUB_USERNAME/ytdl/issues"
+Homepage = "https://github.com/Stonesetter/Youtube-Downloader"
+Repository = "https://github.com/Stonesetter/Youtube-Downloader"
+"Bug Tracker" = "https://github.com/Stonesetter/Youtube-Downloader/issues"
 
 [tool.hatch.build.targets.wheel]
 # When building a wheel (pip-installable package), include only ytdl.py
-# Users install with: pip install git+https://github.com/YOUR_GITHUB_USERNAME/ytdl.git
+# Users install with: pip install git+https://github.com/Stonesetter/Youtube-Downloader.git
 include = ["ytdl.py"]
