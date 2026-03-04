@@ -1,0 +1,26 @@
+# YouTube Downloader — Python Dependencies
+# Install with: pip install -r requirements.txt
+#
+# NOTE: Two system-level tools are also required but are NOT pip packages:
+#
+#   ffmpeg  — merges separate video and audio streams (required for 1080p+)
+#             Linux/WSL:  sudo apt install ffmpeg
+#             Windows:    winget install ffmpeg
+#             macOS:      brew install ffmpeg
+#
+#   node    — JavaScript runtime used by yt-dlp to solve YouTube's
+#             n-parameter challenge. WITHOUT IT, downloads are throttled
+#             to ~50KB/s, making long HD videos practically impossible.
+#             Linux/WSL:  sudo apt install nodejs
+#             Windows:    winget install OpenJS.NodeJS
+#             macOS:      brew install node
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+# The core downloader library. Actively maintained and updated to keep up
+# with YouTube's frequent anti-bot changes. A fork of the original youtube-dl.
+yt-dlp>=2024.11.0
+
+# Terminal output library for colored text and progress bars.
+# If you remove this, the script falls back to plain print() output.
+rich>=13.0.0

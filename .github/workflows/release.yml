@@ -1,0 +1,225 @@
+# .github/workflows/release.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Automatically builds standalone executables and publishes a GitHub Release
+# whenever you push a version tag like "v1.0.1".
+#
+# HOW TO TRIGGER A RELEASE:
+#   1. Update __version__ in ytdl.py (e.g. "1.0.1")
+#   2. Commit the change: git commit -am "bump to v1.0.1"
+#   3. Tag it: git tag v1.0.1
+#   4. Push: git push && git push --tags
+#   5. GitHub Actions runs this workflow automatically
+#   6. A new Release appears on your GitHub page with:
+#        ytdl-windows.exe   (Windows standalone binary)
+#        ytdl-linux         (Linux standalone binary)
+#        Source code archives
+#
+# HOW PYINSTALLER STANDALONE EXECUTABLES WORK:
+#   PyInstaller bundles Python + your script + all pip packages into a single
+#   file. Users don't need Python installed — just the binary. They DO still
+#   need ffmpeg and Node.js (those are too large/platform-specific to bundle).
+#
+# This uses GitHub's FREE Actions minutes (2000 min/month for public repos).
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - "v*"          # triggers on any tag starting with "v" (e.g. v1.0.0)
+  workflow_dispatch:  # also allows manual trigger from GitHub Actions UI
+
+# Only one release can run at a time (prevents race conditions on rapid tags)
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Windows Build ────────────────────────────────────────────────────────
+  build-windows:
+    name: Build Windows (.exe)
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build standalone Windows executable
+        # --onefile: bundle everything into a single .exe
+        # --console: keep the console window (this is a CLI tool)
+        # --name: output filename
+        # --hidden-import: yt-dlp uses dynamic imports that PyInstaller misses
+        run: |
+          pyinstaller `
+            --onefile `
+            --console `
+            --name ytdl-windows `
+            --hidden-import "yt_dlp.extractor" `
+            --hidden-import "yt_dlp.postprocessor" `
+            --hidden-import "yt_dlp.downloader" `
+            --collect-submodules yt_dlp `
+            ytdl.py
+
+      - name: Verify the build works
+        run: dist\ytdl-windows.exe --version
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ytdl-windows
+          path: dist/ytdl-windows.exe
+          if-no-files-found: error
+
+  # ── Linux Build ──────────────────────────────────────────────────────────
+  build-linux:
+    name: Build Linux (binary)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build standalone Linux binary
+        run: |
+          pyinstaller \
+            --onefile \
+            --console \
+            --name ytdl-linux \
+            --hidden-import "yt_dlp.extractor" \
+            --hidden-import "yt_dlp.postprocessor" \
+            --hidden-import "yt_dlp.downloader" \
+            --collect-submodules yt_dlp \
+            ytdl.py
+
+      - name: Verify the build works
+        run: ./dist/ytdl-linux --version
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ytdl-linux
+          path: dist/ytdl-linux
+          if-no-files-found: error
+
+  # ── macOS Build ──────────────────────────────────────────────────────────
+  build-macos:
+    name: Build macOS (binary)
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build standalone macOS binary
+        run: |
+          pyinstaller \
+            --onefile \
+            --console \
+            --name ytdl-macos \
+            --hidden-import "yt_dlp.extractor" \
+            --hidden-import "yt_dlp.postprocessor" \
+            --hidden-import "yt_dlp.downloader" \
+            --collect-submodules yt_dlp \
+            ytdl.py
+
+      - name: Verify the build works
+        run: ./dist/ytdl-macos --version
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ytdl-macos
+          path: dist/ytdl-macos
+          if-no-files-found: error
+
+  # ── Create GitHub Release ────────────────────────────────────────────────
+  release:
+    name: Publish GitHub Release
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # required to create a Release
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      - name: List downloaded files (debug)
+        run: find dist/ -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Use the git tag as the release name (e.g. "v1.0.1")
+          name: "ytdl ${{ github.ref_name }}"
+
+          # Release notes: auto-generated from commit messages since last tag
+          generate_release_notes: true
+
+          # Mark as pre-release if the tag contains a hyphen (e.g. v1.0.0-beta)
+          prerelease: ${{ contains(github.ref_name, '-') }}
+
+          files: |
+            dist/ytdl-windows/ytdl-windows.exe
+            dist/ytdl-linux/ytdl-linux
+            dist/ytdl-macos/ytdl-macos
+
+          body: |
+            ## ytdl ${{ github.ref_name }}
+
+            A free, open-source YouTube downloader supporting 1080p–4K, long videos, and playlists.
+
+            ### Downloads
+
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | Windows  | `ytdl-windows.exe` | Double-click or run from Command Prompt |
+            | Linux    | `ytdl-linux`       | `chmod +x ytdl-linux && ./ytdl-linux` |
+            | macOS    | `ytdl-macos`       | `chmod +x ytdl-macos && ./ytdl-macos` |
+
+            ### Requirements (not bundled)
+            - **ffmpeg** — for merging 1080p+ streams: [ffmpeg.org](https://ffmpeg.org/download.html)
+            - **Node.js** — for full download speed: [nodejs.org](https://nodejs.org)
+
+            ### Quick start
+            ```
+            ytdl-windows.exe "https://youtube.com/watch?v=VIDEO_ID"
+            ytdl-windows.exe "https://youtube.com/watch?v=VIDEO_ID" -q 1440p
+            ytdl-windows.exe "https://youtube.com/watch?v=VIDEO_ID" --info
+            ```

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(where ffmpeg)",
+      "Bash(winget --version)",
+      "Bash(python -m venv .venv)",
+      "Bash(winget install --id Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements)",
+      "Bash(.venv/Scripts/pip install -r requirements.txt)",
+      "Bash(.venv/Scripts/python ytdl.py \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" --info)",
+      "Read(//c/Users/Cleo/AppData/Local/**)",
+      "Bash(.venv/Scripts/python -c \"import yt_dlp; help\\(yt_dlp.YoutubeDL\\)\")",
+      "Bash(.venv/Scripts/python -c \":*)",
+      "Bash(.venv/Scripts/python ytdl.py \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" -q 360p -o ./test_download)",
+      "Bash(.venv/Scripts/pip install pyinstaller --quiet)",
+      "Bash(.venv/Scripts/python -m PyInstaller --onefile --console --name ytdl-windows --hidden-import \"yt_dlp.extractor\" --hidden-import \"yt_dlp.postprocessor\" --hidden-import \"yt_dlp.downloader\" --collect-submodules yt_dlp --clean ytdl.py)"
+    ]
+  }
+}

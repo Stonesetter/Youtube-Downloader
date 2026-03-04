@@ -1,0 +1,69 @@
+# pyproject.toml — Python project metadata
+# ──────────────────────────────────────────────────────────────────────────────
+# This file defines the project for Python's packaging ecosystem.
+#
+# What it's for:
+#   - Lets users install ytdl as a proper Python package with:
+#       pip install git+https://github.com/YOUR_GITHUB_USERNAME/ytdl.git
+#   - Defines the 'ytdl' command so it runs from anywhere in the terminal
+#   - Declares Python version requirements and dependencies
+#
+# What it does NOT do:
+#   - Handle ffmpeg or Node.js installation (those are system dependencies)
+#   - Create standalone executables (see build.sh / build.bat for that)
+#
+# Build backend: hatchling (modern, minimal, no config-file overhead)
+# ──────────────────────────────────────────────────────────────────────────────
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ytdl"
+version = "1.0.0"
+description = "An educational YouTube downloader supporting 1080p–4K and long videos"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [
+    { name = "YOUR_GITHUB_USERNAME" },
+]
+keywords = ["youtube", "downloader", "video", "yt-dlp", "educational"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+]
+
+# Python package dependencies (installed automatically by pip)
+# System deps (ffmpeg, node) are documented in README but not installed here.
+dependencies = [
+    "yt-dlp>=2024.11.0",
+    "rich>=13.0.0",
+]
+
+# This is what makes 'ytdl' work as a command in the terminal.
+# After `pip install .`, you can run: ytdl "URL" instead of: python ytdl.py "URL"
+[project.scripts]
+ytdl = "ytdl:main"
+
+[project.urls]
+Homepage = "https://github.com/YOUR_GITHUB_USERNAME/ytdl"
+Repository = "https://github.com/YOUR_GITHUB_USERNAME/ytdl"
+"Bug Tracker" = "https://github.com/YOUR_GITHUB_USERNAME/ytdl/issues"
+
+[tool.hatch.build.targets.wheel]
+# When building a wheel (pip-installable package), include only ytdl.py
+# Users install with: pip install git+https://github.com/YOUR_GITHUB_USERNAME/ytdl.git
+include = ["ytdl.py"]
