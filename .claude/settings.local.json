@@ -13,7 +13,9 @@
       "Bash(.venv/Scripts/python -c \":*)",
       "Bash(.venv/Scripts/python ytdl.py \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" -q 360p -o ./test_download)",
       "Bash(.venv/Scripts/pip install pyinstaller --quiet)",
-      "Bash(.venv/Scripts/python -m PyInstaller --onefile --console --name ytdl-windows --hidden-import \"yt_dlp.extractor\" --hidden-import \"yt_dlp.postprocessor\" --hidden-import \"yt_dlp.downloader\" --collect-submodules yt_dlp --clean ytdl.py)"
+      "Bash(.venv/Scripts/python -m PyInstaller --onefile --console --name ytdl-windows --hidden-import \"yt_dlp.extractor\" --hidden-import \"yt_dlp.postprocessor\" --hidden-import \"yt_dlp.downloader\" --collect-submodules yt_dlp --clean ytdl.py)",
+      "Bash(dist/ytdl-windows.exe \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" --info)",
+      "Bash(ls \"c:/Users/Cleo/Documents/GitHub/Python Projects/Youtube Downloader/\"*.spec)"
     ]
   }
 }
