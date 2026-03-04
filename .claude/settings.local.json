@@ -15,7 +15,12 @@
       "Bash(.venv/Scripts/pip install pyinstaller --quiet)",
       "Bash(.venv/Scripts/python -m PyInstaller --onefile --console --name ytdl-windows --hidden-import \"yt_dlp.extractor\" --hidden-import \"yt_dlp.postprocessor\" --hidden-import \"yt_dlp.downloader\" --collect-submodules yt_dlp --clean ytdl.py)",
       "Bash(dist/ytdl-windows.exe \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" --info)",
-      "Bash(ls \"c:/Users/Cleo/Documents/GitHub/Python Projects/Youtube Downloader/\"*.spec)"
+      "Bash(ls \"c:/Users/Cleo/Documents/GitHub/Python Projects/Youtube Downloader/\"*.spec)",
+      "Bash(gh run list --limit 3)",
+      "Bash(where.exe gh)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(bash --version)",
+      "Bash(python3 -m venv --help)"
     ]
   }
 }
