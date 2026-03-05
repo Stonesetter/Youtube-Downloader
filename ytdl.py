@@ -82,8 +82,16 @@ HOW YOUTUBE VIDEO ACTUALLY WORKS — READ THIS FIRST
   or they cut off after only ~2MB of data.
 
   Workaround: pass --cookies with your browser name. yt-dlp extracts cookies
-  from your real browser session, which include valid authentication tokens.
-  Example:  python ytdl.py URL --cookies chrome
+  from your browser's session, which include valid authentication tokens.
+
+  IMPORTANT: Chrome on Windows often fails because Chrome locks its cookie
+  database while running AND encrypts cookies with App-Bound Encryption
+  (since Chrome 127, mid-2024). Firefox does NOT have this problem.
+
+  Recommended:  python ytdl.py URL --cookies firefox
+  Alternative:  Export cookies to a file with a browser extension like
+                "Get cookies.txt LOCALLY", then:
+                python ytdl.py URL --cookies-file cookies.txt
 
   7. WHY LONG VIDEOS FAIL IN OTHER TOOLS
   ─────────────────────────────────────────────────
@@ -775,16 +783,36 @@ def build_ydl_opts(args: argparse.Namespace, config: dict, progress_hook=None) -
             "preferredquality": "0",  # "0" = highest available quality
         })
 
-    # ── BROWSER COOKIES ────────────────────────────────────────────────────
-    # Some videos require authentication:
+    # ── COOKIES / AUTHENTICATION ──────────────────────────────────────────
+    # Some videos require you to be logged in:
     #   - Age-restricted content
     #   - Members-only videos (YouTube Memberships)
     #   - Private videos you have access to
-    # yt-dlp reads cookies from your browser's encrypted database.
-    # This also helps with PoToken (YouTube's 2024 bot-detection system).
-    # Valid browser names: chrome, firefox, edge, safari, brave, opera
-    if args.cookies:
+    #   - Videos where YouTube demands bot verification ("Sign in to confirm")
+    #
+    # Two ways to provide cookies:
+    #
+    # 1. --cookies BROWSER  (extract directly from your browser's cookie DB)
+    #    Firefox is recommended. Chrome often fails on Windows because:
+    #      a) Chrome locks its cookie database file while running
+    #      b) Chrome 127+ uses App-Bound Encryption that yt-dlp can't decrypt
+    #    See: https://github.com/yt-dlp/yt-dlp/issues/7271
+    #
+    # 2. --cookies-file FILE  (read a Netscape-format cookies.txt)
+    #    Export with a browser extension like "Get cookies.txt LOCALLY",
+    #    save as cookies.txt in this folder (it's gitignored — safe).
+    #    This always works regardless of browser encryption.
+    #
+    if args.cookies_file:
+        cookie_path = os.path.expanduser(args.cookies_file)
+        if not os.path.isfile(cookie_path):
+            _print_error(f"Cookie file not found: {cookie_path}")
+            sys.exit(1)
+        opts["cookiefile"] = cookie_path
+        _print_info(f"Using cookies from file: {os.path.basename(cookie_path)}")
+    elif args.cookies:
         opts["cookiesfrombrowser"] = (args.cookies, None, None, None)
+        _print_info(f"Extracting cookies from {args.cookies}...")
 
     # ── PLAYLIST RANGE ─────────────────────────────────────────────────────
     if args.playlist_start:
@@ -833,7 +861,8 @@ examples:
   %(prog)s "https://youtu.be/VIDEO_ID" -q 4k --mkv       4K MKV
   %(prog)s "https://youtu.be/VIDEO_ID" -q audio          audio only (M4A)
   %(prog)s "https://youtu.be/VIDEO_ID" --info             show all formats
-  %(prog)s "https://youtu.be/VIDEO_ID" --cookies chrome   use browser login
+  %(prog)s "https://youtu.be/VIDEO_ID" --cookies firefox   use Firefox login
+  %(prog)s "https://youtu.be/VIDEO_ID" --cookies-file cookies.txt
   %(prog)s "https://youtu.be/PLAYLIST" --playlist-end 5   first 5 from playlist
   %(prog)s --version                                      show version
         """,
@@ -876,9 +905,20 @@ examples:
         "--cookies",
         metavar="BROWSER",
         help=(
-            "Use cookies from BROWSER for age-restricted/members-only content. "
-            "Values: chrome, firefox, edge, safari, brave, opera. "
-            "Also helps with YouTube's PoToken bot-detection."
+            "Extract cookies from BROWSER for login-required videos. "
+            "Firefox is recommended (Chrome often fails on Windows due to "
+            "database locking and App-Bound Encryption). "
+            "Values: firefox, chrome, edge, safari, brave, opera."
+        ),
+    )
+
+    parser.add_argument(
+        "--cookies-file",
+        metavar="FILE",
+        help=(
+            "Path to a Netscape-format cookies.txt file. Use this if "
+            "--cookies fails. Export from your browser with an extension like "
+            "'Get cookies.txt LOCALLY'. This file is gitignored automatically."
         ),
     )
 
@@ -1003,16 +1043,34 @@ examples:
             _print_error(msg)
 
             # Provide helpful context for common errors
-            if "Sign in" in msg or "login" in msg.lower():
+            if "Could not copy" in msg and "cookie" in msg.lower():
                 print()
-                _print_warn("This video requires a YouTube account.")
-                _print_info("Try: python ytdl.py URL --cookies chrome")
-                _print_info("     (or --cookies firefox / --cookies edge)")
+                _print_warn("Could not read browser cookies.")
+                _print_info("Chrome on Windows locks its cookie database while running")
+                _print_info("and uses encryption that yt-dlp often can't decrypt.")
+                print()
+                _print_info("Fix 1 (easiest): Use Firefox instead of Chrome:")
+                _print_info("  ytdl URL --cookies firefox")
+                print()
+                _print_info("Fix 2: Export cookies to a file manually:")
+                _print_info("  1. Install browser extension 'Get cookies.txt LOCALLY'")
+                _print_info("  2. Go to youtube.com (make sure you're logged in)")
+                _print_info("  3. Click the extension → Export → save as cookies.txt")
+                _print_info("  4. ytdl URL --cookies-file cookies.txt")
+
+            elif "Sign in" in msg or "login" in msg.lower() or "bot" in msg.lower():
+                print()
+                _print_warn("YouTube wants you to prove you're not a bot.")
+                _print_info("You need to pass your browser's login cookies.")
+                print()
+                _print_info("Option 1 (recommended): ytdl URL --cookies firefox")
+                _print_info("Option 2 (if Chrome):    ytdl URL --cookies-file cookies.txt")
+                _print_info("  (export cookies.txt with the 'Get cookies.txt LOCALLY' extension)")
 
             elif "Private video" in msg:
                 print()
                 _print_warn("This video is private.")
-                _print_info("Use --cookies if you have access to it while logged in.")
+                _print_info("Use --cookies firefox (or --cookies-file) if you have access.")
 
             elif "429" in msg or "Too Many Requests" in msg:
                 print()
