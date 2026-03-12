@@ -52,6 +52,9 @@ Thumbs.db
 # Test output
 test_download/
 
+# Downloaded folder
+/downloaded/
+
 # Secrets / tokens — NEVER commit these
 *.env
 .env
