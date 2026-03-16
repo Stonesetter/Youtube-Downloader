@@ -1,3 +1,62 @@
-.claude/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
 
-# Copilot settings (local configuration, machine-specific)
+# Virtual environment — don't commit this, it's huge and machine-specific.
+# Each user runs setup.sh / setup.bat to create their own.
+.venv/
+venv/
+env/
+
+# Downloaded videos — never commit these
+*.mp4
+*.mkv
+*.webm
+*.m4a
+*.mp3
+*.part
+
+# PyInstaller output
+dist/
+build/
+*.spec.bak
+
+# yt-dlp cache and temp files
+*.ytdl
+*.f*.mp4
+*.f*.webm
+*.f*.m4a
+
+# Config (optional — contains user's personal defaults)
+# Uncomment the line below if you want to ignore the global config.
+# The config lives in %APPDATA%/ytdl/ or ~/.config/ytdl/ — not here.
+# (No config is stored in the repo directory itself.)
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Test output
+test_download/
+
+# Downloaded folder
+/downloaded/
+
+# Secrets / tokens — NEVER commit these
+*.env
+.env
+secrets.json
+cookies.txt
